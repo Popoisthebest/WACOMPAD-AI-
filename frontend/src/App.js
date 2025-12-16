@@ -15,12 +15,48 @@ function App() {
     const c = canvasRef.current;
     if (!c) return;
     const ctx = c.getContext("2d");
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "#111827";
+
+    const resizeCanvas = () => {
+      const rect = c.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const w = Math.max(1, Math.floor(rect.width * dpr));
+      const h = Math.max(1, Math.floor(rect.height * dpr));
+      if (c.width !== w || c.height !== h) {
+        // set the drawing buffer size to device pixels
+        c.width = w;
+        c.height = h;
+        // reset transform and scale so we can draw in CSS pixels
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+      }
+      // set drawing styles in CSS pixel units (context is scaled)
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#111827";
+      ctx.fillStyle = "#111827";
+    };
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    // also respond to possible DPR changes (best-effort)
+    let mq = null;
+    try {
+      mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+      if (mq && mq.addEventListener) mq.addEventListener('change', resizeCanvas);
+    } catch (e) {
+      // ignore
+    }
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+      try {
+        if (mq && mq.removeEventListener) mq.removeEventListener('change', resizeCanvas);
+      } catch (e) {}
+    };
   }, []);
 
   const getPos = (e) => {
+    // return coordinates in CSS pixels (context is scaled to map CSS pixels)
     const rect = canvasRef.current.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
@@ -30,6 +66,7 @@ function App() {
     if (!c) return;
     const ctx = c.getContext("2d");
     ctx.beginPath();
+    // lineWidth is in CSS pixels (context already scaled)
     ctx.lineWidth = Math.max(1, (pressure || 0.5) * 4);
     ctx.moveTo(from.x, from.y);
     ctx.lineTo(to.x, to.y);
@@ -53,7 +90,7 @@ function App() {
     setDrawingRecords((prev) => [...prev, rec]);
     setIsDrawing(true);
     setLastPos(pos);
-    // small dot
+    // small dot (use CSS pixel radius; ctx is scaled to CSS pixels)
     const ctx = canvasRef.current.getContext("2d");
     ctx.beginPath();
     ctx.fillStyle = "#111827";
@@ -99,7 +136,9 @@ function App() {
     const c = canvasRef.current;
     if (!c) return;
     const ctx = c.getContext("2d");
-    ctx.clearRect(0, 0, c.width, c.height);
+    // clear using CSS pixels (context is scaled to CSS pixels)
+    const rect = c.getBoundingClientRect();
+    ctx.clearRect(0, 0, rect.width, rect.height);
     setDrawingRecords([]);
   };
 
@@ -285,10 +324,8 @@ function App() {
                   <div className="w-full border rounded overflow-hidden">
                     <canvas
                       ref={canvasRef}
-                      width={800}
-                      height={400}
                       className="w-full h-64 touch-none"
-                      style={{ background: "#fff" }}
+                      style={{ background: "#fff", touchAction: 'none' }}
                       onPointerDown={handlePointerDown}
                       onPointerMove={handlePointerMove}
                       onPointerUp={handlePointerUp}
