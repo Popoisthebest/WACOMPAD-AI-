@@ -42,7 +42,8 @@ function App() {
     let mq = null;
     try {
       mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-      if (mq && mq.addEventListener) mq.addEventListener('change', resizeCanvas);
+      if (mq && mq.addEventListener)
+        mq.addEventListener("change", resizeCanvas);
     } catch (e) {
       // ignore
     }
@@ -50,7 +51,8 @@ function App() {
     return () => {
       window.removeEventListener("resize", resizeCanvas);
       try {
-        if (mq && mq.removeEventListener) mq.removeEventListener('change', resizeCanvas);
+        if (mq && mq.removeEventListener)
+          mq.removeEventListener("change", resizeCanvas);
       } catch (e) {}
     };
   }, []);
@@ -325,7 +327,7 @@ function App() {
                     <canvas
                       ref={canvasRef}
                       className="w-full h-64 touch-none"
-                      style={{ background: "#fff", touchAction: 'none' }}
+                      style={{ background: "#fff", touchAction: "none" }}
                       onPointerDown={handlePointerDown}
                       onPointerMove={handlePointerMove}
                       onPointerUp={handlePointerUp}
