@@ -156,8 +156,8 @@ function App() {
   };
 
   const formatProb = (p) => {
-    if (p === null) return '분석 불가';
-    if (p > 0 && p < 0.01) return '<0.01';
+    if (p === null) return "분석 불가";
+    if (p > 0 && p < 0.01) return "<0.01";
     return p.toFixed(2);
   };
 
