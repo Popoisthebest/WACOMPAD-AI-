@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Single-command developer launcher
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+# ensure scripts are executable
+chmod +x "$ROOT/scripts"/*.sh || true
+# run start-dev with open and follow-logs
+exec bash "$ROOT/scripts/start-dev.sh" --open --follow-logs
